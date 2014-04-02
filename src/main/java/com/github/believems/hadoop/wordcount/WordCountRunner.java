@@ -1,5 +1,12 @@
-package com.github.hadoop.wordcount;
+package com.github.believems.hadoop.wordcount;
 
+import com.github.believems.hadoop.helper.HadoopHelper;
+import com.github.believems.hadoop.wordcount.combiner.WordCombiner;
+import com.github.believems.hadoop.wordcount.comparator.IntWritableDecreasingComparator;
+import com.github.believems.hadoop.wordcount.mapper.WordMapper;
+import com.github.believems.hadoop.wordcount.partitioner.WordPartitioner;
+import com.github.believems.hadoop.wordcount.reducer.CountReducer;
+import com.github.believems.hadoop.wordcount.reducer.SortReducer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -12,7 +19,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-import sun.misc.Sort;
 
 import java.io.IOException;
 
@@ -20,8 +26,9 @@ import java.io.IOException;
  * Created by xiangli on 4/1/14.
  */
 public class WordCountRunner implements Tool {
-    private static final Configuration conf = ConfHelper.getConf();
-    private static final Path tmpPath=FileHelper.getTmpPath();
+    private static final Configuration conf = HadoopHelper.getConf();
+    private static final Path tmpPath = HadoopHelper.getTmpPath();
+    private static final String dir = "word_count";
     private Job getSortJob() throws IOException {
         Job job = Job.getInstance(conf);
 
@@ -33,7 +40,7 @@ public class WordCountRunner implements Tool {
         job.setJobName("Words Sort");
         job.setJarByClass(getClass());
         FileInputFormat.addInputPath(job, tmpPath);
-        FileOutputFormat.setOutputPath(job, FileHelper.OutputPath);
+        FileOutputFormat.setOutputPath(job, HadoopHelper.getOutputPath(dir));
         job.setReducerClass(SortReducer.class);
         job.setMapperClass(InverseMapper.class);
         job.setSortComparatorClass(IntWritableDecreasingComparator.class);
@@ -41,6 +48,7 @@ public class WordCountRunner implements Tool {
         job.setOutputValueClass(Text.class);
         return job;
     }
+
     private Job getCountJob() throws IOException {
         Job job = Job.getInstance(conf);
 
@@ -53,7 +61,7 @@ public class WordCountRunner implements Tool {
 
         job.setJobName("Words Count");
         job.setJarByClass(getClass());
-        FileInputFormat.addInputPath(job, FileHelper.InputPath);
+        FileInputFormat.addInputPath(job, HadoopHelper.getInputPath(dir));
         FileOutputFormat.setOutputPath(job, tmpPath);
 
 
@@ -69,7 +77,7 @@ public class WordCountRunner implements Tool {
     }
 
     public static void main(String[] args) throws Exception {
-        FileHelper.emptyTestDir();
+        HadoopHelper.delete(HadoopHelper.getOutputPath(dir));
         int exitCode = ToolRunner.run(new WordCountRunner(), args);
         System.exit(exitCode);
     }
@@ -78,15 +86,14 @@ public class WordCountRunner implements Tool {
     public int run(String[] strings) throws Exception {
         try {
             Job countJob = getCountJob();
-            if( countJob.waitForCompletion(true) )
-            {
-                Job sortJob=getSortJob();
+            if (countJob.waitForCompletion(true)) {
+                Job sortJob = getSortJob();
                 sortJob.waitForCompletion(true);
                 return 1;
             }
             return 0;
         } finally {
-            FileHelper.delete(tmpPath);
+            HadoopHelper.delete(tmpPath);
         }
     }
 
@@ -97,6 +104,6 @@ public class WordCountRunner implements Tool {
 
     @Override
     public Configuration getConf() {
-        return ConfHelper.getConf();
+        return conf;
     }
 }

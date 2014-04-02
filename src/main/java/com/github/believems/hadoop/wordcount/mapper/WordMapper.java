@@ -1,4 +1,4 @@
-package com.github.hadoop.wordcount;
+package com.github.believems.hadoop.wordcount.mapper;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
