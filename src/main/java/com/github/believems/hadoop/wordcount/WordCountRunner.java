@@ -16,7 +16,9 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.map.InverseMapper;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
@@ -41,6 +43,8 @@ public class WordCountRunner implements Tool {
         job.setJarByClass(getClass());
         FileInputFormat.addInputPath(job, tmpPath);
         FileOutputFormat.setOutputPath(job, HadoopHelper.getOutputPath(dir));
+        MultipleOutputs.addNamedOutput(job, "More", TextOutputFormat.class, Text.class, IntWritable.class);
+        MultipleOutputs.addNamedOutput(job,"Less",TextOutputFormat.class,Text.class,IntWritable.class);
         job.setReducerClass(SortReducer.class);
         job.setMapperClass(InverseMapper.class);
         job.setSortComparatorClass(IntWritableDecreasingComparator.class);

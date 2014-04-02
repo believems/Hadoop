@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="60 seconds" debug="false">
     <property name="LOG_HOME" value="./logs"/>
-    <property name="LOG_NAME" value="HadoopLearn"/>
+    <property name="LOG_NAME" value="Hadoop"/>
     <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
         <Encoding>UTF-8</Encoding>
